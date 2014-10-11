@@ -4,9 +4,6 @@
 //include the node file
 #include "linked_list.h"
 
-// Create a node for page frame (Node of a buffer pool)
-typedef struct page_Frame{};
-
 // Define Linked list operations
 
 //print buffer pool
@@ -54,3 +51,4 @@ int pages_of_file_Associated (char *fileName,)
 // increment a counter if pages are found
 // return no of pages of the file
 }
+

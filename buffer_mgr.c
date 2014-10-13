@@ -7,27 +7,32 @@
 RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName, 
 		  const int numPages, ReplacementStrategy strategy, 
 		  void *stratData)
-{//Check if the buffer pool exists
+{
+// Obtain a lock on the code block
+//Check if the buffer pool exists
 //Check for pointer existence,if null throw an error.
 //If false,allocate memory to the buffer pool based on the no of pages passed.
 //Call the insert method from linked list and create the number of page frames based on the pages passed.
 //Check the return code of insert ,if true,throw sucess else page frame cannot be intialised
 //Set the parameters of bm
+// unlock the block
 }
 RC shutdownBufferPool(BM_BufferPool *const bm)
 {
+// Obtain a lock on the code block
 //set that the page is not pinned i.e. it is false
 //get the fixed counts
 //get the frame contents
 //if the fix count is greater than zero then,means that the page has been pinned.
 //call the respective method to check if the page is dirty and write back to disk
-Free the memory that has been allocated to the buffer pool.
+// Free the memory that has been allocated to the buffer pool.
+// Unlock
 }
 RC forceFlushPool(BM_BufferPool *const bm)
 {
-
+// Obtain a lock on the code block
 //call the respective method to check if the page is dirty and write back to disk}
-
+// unlock
 }
 // Buffer Manager Interface Access Pages
 RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page)
@@ -45,13 +50,14 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page)
 }
 RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page)
 {
-Check for page frame existence
-Check if the page is dirty.If yes,then write it to the page file.
-#if error file not found.
+// Check for page frame existence
+// Check if the page is dirty.If yes,then write it to the page file.
+// #if error file not found.
 }
 RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page, 
 	    const PageNumber pageNum)
 {
+// Obtain a lock on the code block
 // Check for the page existence in the buffer pool
 // if already available say already available and no need to pin again
 // if not check for pool whether is free
@@ -60,6 +66,7 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 // get the proper page to replace
 // update node attributes (time and counter)
 // add node to buffer pool
+// unlock
 }
 
 // Statistics Interface
@@ -86,5 +93,17 @@ int *getFixCounts (BM_BufferPool *const bm)
 //Check the fix count of the pages in the page frame .
 //return the array 
 }
-int getNumReadIO (BM_BufferPool *const bm);
+int getNumReadIO (BM_BufferPool *const bm)
+{
+// Search for the node that was requested for
+// When found get the no of pages read
+// if not return zero
+// If found return no of pages
+}
 int getNumWriteIO (BM_BufferPool *const bm);
+{
+// Search for the node that was requested for
+// When found get the no of pages wrote
+// if not return zero
+// If found return no of pages
+}

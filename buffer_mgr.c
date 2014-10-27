@@ -4,6 +4,8 @@
 // for type bool
 #include "dt.h"
 
+RC rtag=RC_OK,wtag=RC_OK;
+
 RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName, 
 		  const int numPages, ReplacementStrategy strategy, 
 		  void *stratData)
@@ -106,4 +108,104 @@ int getNumWriteIO (BM_BufferPool *const bm);
 // When found get the no of pages wrote
 // if not return zero
 // If found return no of pages
+}
+
+// The algorithm must return whether it is success or not
+bool doalgorithm(BM_BufferPool * const bm, const PageNumber pageNum, BM_PageHandle * const page, ReplacementStrategy rs) 
+{
+	page_Frame *pf;
+	char *ra;
+	int i,j;
+	int pages_per_block = bm->numPages;
+	frame_content *page_to_replace,*content,*no_write_pages[pages_per_block],*next_page_content,*replace_content;
+	// Search for a page passed
+	pf = search_Page_Frame(head_ptr, bm);
+	page_to_replace = NULL;
+	// See which page to replace 
+	//code block starts
+	content  = pf->frame_content;
+	// Initialize all the blocks to null
+	for (i = 0; i < pages_per_block; i++) 
+	no_write_pages[i] = NULL;
+	
+	// Check for fixed count of all frames who has fixed count more than zero
+	for (i = 0; i < pages_per_block; i++) 
+	{
+		// if fixcount is zero then write them to array took
+		if ((content[i].fixcounts) == 0) 
+		{
+			no_write_pages[j] = (content+i);
+			j++;
+		}
+	}
+
+	// no of pages that has no write pages 
+    int no_write_pages_size= sizeof (no_write_pages);
+
+	// get a replace page in the first one then loop
+	replace_content = no_write_pages[0];
+	// get the 
+	for (i = 0; i < no_write_pages_size; i++) 
+	{
+		next_page_content = no_write_pages[i];
+		// Until last frame of a pool
+		if(next_page_content!=NULL)
+		{
+		// If FIFO look at the counter and replace with immediate counter
+				if(rs == RS_FIFO)
+				{
+				if ((replace_content->counter) > (next_page_content->counter))
+				replace_content = next_page_content;
+				}
+		// If LRU Look at the time that inserted (Count it up)
+		else if(rs ==RS_LRU)
+			{
+	            if(replace_content->timeStamp > next_page_content->timeStamp)
+				replace_content = next_page_content;
+			}
+		}
+	}
+	// Code block ends
+	
+	
+	// assign replace 
+	page_to_replace = replace_content;
+	// if a page returned to replace is null
+	if(page_to_replace==NULL)
+    return false;
+	
+	ra = page_to_replace->frame;
+		
+	// Page replaced need to be written of it is dirty
+	// Check for the dirty flag of the page
+		if (page_to_replace->dirty_flag == TRUE) 
+			{
+			wtag = writeBlock(page_to_replace->pageno, bm->mgmtData, ra);
+			page_to_replace->dirty_flag=FALSE;
+			pf->pages_wrote++;
+			}
+	
+	// Read the block needed
+	rtag = readBlock(pageNum, bm->mgmtData, ra);
+	// 
+		if(rtag==RC_READ_NON_EXISTING_PAGE)
+        rtag = appendEmptyBlock(bm->mgmtData);
+		
+    pf->pages_read++;
+	page->pageNum  = pageNum;
+	
+	// send data
+	page->data = page_to_replace->frame;
+	// Equal page numbers
+    page_to_replace->pagenums = pageNum;
+	// Increment 
+    page_to_replace->fixcounts = page_to_replace->fixcounts+1;
+	// increment pages to replace counter by one 
+	page_to_replace->counter = page_to_replace->counter + 1;
+	
+	//Check for read and write tags and return whatever necessary
+	if (rtag == RC_OK && wtag == RC_OK)
+	return true; 
+	else
+	return false;
 }

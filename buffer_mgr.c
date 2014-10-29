@@ -14,11 +14,13 @@ static pthread_mutex_t lock_initbufferpool=PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t lock_shutdown=PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t lock_forceflush=PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t lock_pin=PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t lock_unpin=PTHREAD_MUTEX_INITIALIZER;
+//static pthread_mutex_t lock_unpin=PTHREAD_MUTEX_INITIALIZER;
 
 // Head node pointer
 pointer_to_node head_ptr=NULL;
 
+// for time
+long int univtime = -32674;
 
 RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName, 
 		  const int numPages, ReplacementStrategy strategy, 
@@ -228,34 +230,155 @@ return rc;
 
 RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page)
 {
+RC rc;
+//Local Variables
+page_Frame *pf;
+frame_content *fc;
+int page_count,i;
 // Check for the requested page in buffer
+pf = search_Page_Frame (bm,head_ptr);
+page_count = bm->numPages;
 // if available check for fix_counts
-// if zero then check whether page was dirtied
-// if dirty write to disk and unpin
-// if not dirty then unpin directly
-// if not zero then throw error saying page cant be unpinned
+if (pf !=NULL)
+{
+fc = pf->frame_content;
+	for (i=0;i<page_count;i++)
+	{
+		if (((fc+i)->pageno) == page->pageNum)
+		{
+		// if zero then check whether page was dirtied
+			if (((fc+i)->dirty_flag)== TRUE)
+			{
+			// if dirty write to disk and unpin
+			rc = writeBlock(page->pageNum,bm->mgmtData,page->data);
+			(fc+i)->fix_count --;
+			// if not zero then throw error saying page cant be unpinned
+			}
+			else 
+			rc = RC_WRITE_FAILED;
+		}
+	}
+}
+return rc;
 }
 
 RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page)
 {
+RC rc;
+// Local Variables
+page_Frame *pf;
 // Check for page frame existence
-// Check if the page is dirty.If yes,then write it to the page file.
-// #if error file not found.
+pf = search_Page_Frame (bm,head_ptr);
+if (pf !=NULL)
+{
+	//Check for file handle null 
+	if (bm->mgmtData !=NULL)
+	{
+	writeBlock(page->pageNum,bm->mgmtData,page->data);
+	pf->pages_wrote ++;
+	rc = RC_OK;
+	}
+	else
+	// #if error file not found.
+	rc= RC_FILE_NOT_FOUND;
+}
+return rc;
 }
 
 RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page, 
 	    const PageNumber pageNum)
 {
+RC rc,rtag,wtag;
+bool rettag; //for checking doalgorithm return
+// Local Variables
+page_Frame *pf;
+frame_content *fc,*pr; //pr is for page_return
+int page_count,i,flag=1; // flag is for check for an empty frame
+ReplacementStrategy rs = bm->strategy;
+page_count = bm->numPages;
 // Obtain a lock on the code block
+pthread_mutex_lock(&lock_pin);
 // Check for the page existence in the buffer pool
-// if already available say already available and no need to pin again
-// if not check for pool whether is free
-// if free pin the page
-// if not free check for the replacement algorithm called for
-// get the proper page to replace
-// update node attributes (time and counter)
-// add node to buffer pool
-// unlock
+pf = search_Page_Frame (bm,head_ptr);
+if (pf !=NULL)
+{
+fc = pf->frame_content;
+	// Check for availability till end of page count 
+	for (i=0;i<page_count;i++)
+	{
+		if (((fc+i)->pageno) > -1 )
+		{
+		flag=0;
+		// if already available say already available and no need to pin again
+			if (((fc+i)->pageno) == pageNum)
+			{
+			(fc+i)->timeStamp = univtime++;
+			page -> pageNum = pageNum;
+			page->data = (fc+i)-> frame;
+			((fc+i)->fix_count)++;
+			// unlock
+			pthread_mutex_unlock(&lock_pin);
+			rc = RC_OK;
+			return rc;
+			}
+		}
+	} //Done with checking whether it is available 
+		
+	// if not check for pool whether is free, and assign page available
+	for (i<0;i<page_count;i++)
+	{
+		if (((fc+i)->pageno) == -1 )
+		{
+		pr = fc+i;
+		flag= 1;
+		break;
+		}
+	}
+}
+// No page frame initialization
+else
+{
+pr = fc;
+(fc->counter)++;
+(fc+i)->timeStamp = univtime++;
+flag=1;
+}
+
+//Check for the flag and see if there is an empty flag
+if (flag==1)
+{
+page->pageNum = pageNum;
+page->data = pr->frame;
+wtag = RC_OK;
+	// if free pin the page
+	if (readBlock(pageNum,bm->mgmtData,pr->frame) == RC_READ_NON_EXISTING_PAGE)
+	rtag = writeBlock(page_count+1,bm->mgmtData,page->data);
+	else
+	{
+	// update node attributes (time and counter)
+	rtag = RC_OK;
+	pf->pages_read++;
+	fc->pageno = pageNum;
+	fc->fix_count++;
+	}
+}
+else
+{
+	// if not free check for the replacement algorithm called for
+	if (rs == RS_FIFO || rs == RS_LRU)
+	// get the proper page to replace
+	rettag = doalgorithm (bm,pageNum,page,rs);
+	else 
+	{
+	rettag = FALSE;
+	rc = RC_INVALID_STRATEGY;
+	}
+}
+if (flag==1 || rtag == RC_OK)
+rc = RC_OK;
+else
+rc = RC_WRITE_FAILED;
+return rc;
 }
 
 // Statistics Interface

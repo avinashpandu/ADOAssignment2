@@ -7,8 +7,9 @@
 CONTENTS
 *********
 1)Instructions to run the code
+2)Additional functionalities
 2)Description of functions used
-3)Additional Test Cases
+3)Additional Test Cases and Additional error checks
 4)Implementation
 
 *****************************************************************
@@ -25,22 +26,19 @@ a)For executing mandatory test cases:
 
 3) ./assign1
 
-b) For executing additional test cases:
-
-1) In the terminal,navigate to the assignment directory.
-
-2) Type: 
-	make -f makefile2
-
-3) ./assign2
-
-
 
 
 *****************************************************************
 
+2)Additional functionalities
+**************************
+1)We have implemented Least recently used algorithm as an additional replacement strategy.
 
-2)Description of functions used
+2)We have made the buffer pool functions thread safe.
+
+3)We have included additional test cases and additional error checks.
+
+3)Description of functions used
 ********************************
 
 	Function :initBufferPool
@@ -180,8 +178,8 @@ This function is used to initialize the page frame.
 1)Traverse till the size of the page.
 2)Fill the contents of the page with null bytes.
 
-3) Additional Test Cases
-------------------------
+4) Additional Test Cases and Additional Error Checks
+----------------------------------------------------
 
 We have included additional test cases for executing the following functions.
 

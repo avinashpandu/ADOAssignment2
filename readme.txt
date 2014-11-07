@@ -32,7 +32,7 @@ a)For executing mandatory test cases:
 
 2)Additional functionalities
 **************************
-1)We have implemented Least recently used algorithm as an additional replacement strategy.
+1)We have implemented Least recently used and Least frequently used algorithm as an additional replacement strategy.
 
 2)We have made the buffer pool functions thread safe.
 
@@ -183,15 +183,23 @@ This function is used to initialize the page frame.
 
 We have included additional test cases for executing the following functions.
 
--
--
--
--
--
--
--
--
+->
+->
+->
+->
+->
+->
+->
+->
 
+We have included the following additional error checks
+
+->
+->
+->
+->
+->
+->
 
 4) Implementation
 -----------------
@@ -214,16 +222,15 @@ The implementation versions with the descriptions are as follows.
 
 Version 	   Date 	   Description				
 ----------    --------   ------------
-version 1.0  9/25/2014   Initial code had logical and syntax 					   errors
+version 1.0  10/11/2014  All functions were commented
+ 
+version 1.1  10/12/2014  Linked list functions were complete
 
-version 1.1  9/26/2014   Errors had been rectified and makefile 					   was created
+version 1.2  10/25/2014  LRU and FIFO functions were added to 					    perform the replacement
 
-version 1.2  9/27/2014   Changes in ensure capacity were   				              incorporated     
+version 1.3  10/29/2014  Make file was created and code had 					   logical and syntax errors
 
-version 1.3  10/02/2014  All test cases were sucessfully 					  	   implemented and additional test cases 					   were added
-
-version 1.4  10/03/2014  makefile was updated and comments were 
-(FINAL)			   added to improve readability of the 					   code.
+version 1.4  10/30/2014  Syntax errors were rectified.
  
 
 

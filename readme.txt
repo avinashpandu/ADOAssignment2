@@ -32,7 +32,7 @@ a)For executing mandatory test cases:
 
 2)Additional functionalities
 **************************
-1)We have implemented Least recently used and Least frequently used algorithm as an additional replacement strategy.
+1)We have implemented Least Recently Used and Least Frequently Used algorithm as an additional replacement strategy.
 
 2)We have made the buffer pool functions thread safe.
 
@@ -194,12 +194,10 @@ We have included additional test cases for executing the following functions.
 
 We have included the following additional error checks
 
-->
-->
-->
-->
-->
-->
+RC_REQUSTED_PAGE_PAGE_NOT_FOUND 206 ->Return if the requested page is not found.
+
+RC_INVALID_STRATEGY 207 ->Return if an invalid replacement strategy is used. 
+
 
 4) Implementation
 -----------------

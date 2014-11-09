@@ -8,9 +8,9 @@ CONTENTS
 *********
 1)Instructions to run the code
 2)Additional functionalities
-2)Description of functions used
-3)Additional Test Cases and Additional error checks
-4)Implementation
+3)Description of functions used
+4)Additional Test Cases and Additional error checks
+5)Implementation
 
 *****************************************************************
 
@@ -32,7 +32,7 @@ a)For executing mandatory test cases:
 
 2)Additional functionalities
 **************************
-1)We have implemented Least Recently Used and Least Frequently Used algorithm as an additional replacement strategy.
+1)We have implemented Least Recently Used as an additional replacement strategy.
 
 2)We have made the buffer pool functions thread safe.
 
@@ -44,66 +44,73 @@ a)For executing mandatory test cases:
 	Function :initBufferPool
 	-------------------------
 
-1)Obtain a lock on the code block for making the #function(application) thread safe.
-2)Check for buffer pool existence.
-3)Initialize the parameters of the buffer pool and the frame.  
-4)Create the number of page frames based on the number of pages passed by calling the insert method from linked list.
-5)Unlock the block.#
+
+1)Open page file and initialize fHandle.If opening fails,throw an appropriate error code.
+#2)Initialize the linked list to be of size numPages and insert the Page Frame.
+3)Initialize other Values in bp_manager  by calling the user defined function init_other_vals.
+4)The mgmtData is used for book keeping,which contains the information of pages read and pages wrote.
+
 
 	Function :shutdownBufferPool
 	----------------------------
 	
-1)Obtain a lock on the code block for making the #function(application) thread safe.
-2)If the fix count of a page is greater than zero,set that the page has been pinned.
-3)Check if pages are dirty.If true,write the pages back to the disc.
-4)Delete the page frame.
-5)Free the memory that has been allocated to the buffer pool.
-6)Unlock the block.# 
+
+1)If the fix count of a page is greater than zero,return an appropriate error code.
+2)Check if pages are dirty.If true,write the pages back to the disc by calling forceFlushPool function.
+3)Free the memory that has been allocated to the buffer pool.
+
 	
 	Function : forceFlushPool
 	-------------------------
 
-1)Obtain a lock on the code block for making the #function(application) thread safe.
-2)Check if any page is dirty.If true,write the page back to the disk.
-3)Throw an error message if the writing to the disk was not successfull.
-4)Unlock the block.# 
+
+1)Check if the buffer pool has been initialized.If not,throw an appropriate error code.
+#2)Traverse till the end of the page frame.
+3)If the dirty_Flag is set true and the fix_Count is equal to zero,then call the  writeBlock function to write the contents to the disk.
+#4)On success,return RC_OK to the calling function. 
 
 	Function : markDirty
 	---------------------
-	
-1)Traverse the contents of the page frame from the 1st node till last.
-2)If the page is dirty,set the flag to true .RC_OK else,mark dirty failed error.
-3)Return the appropriate message to the calling function.#
+1)Check if the buffer pool has been initialized.If not,throw an appropriate error code.	
+2)Traverse the contents of the page frame from the 1st node till last.
+3)If the page is dirty,set the flag to true.
+4)On success,return RC_OK to the calling function..
 
 
 
 	Function : unpinPage
 	---------------------
 	
+1)Check if the buffer pool has been initialized.If not,throw an appropriate error code.	
+2)Traverse the contents of the page frame from the 1st node till last.
+###3)Reduce the fix count if the page is already in the buffer.(is this statement true ????)###
+###4)If the dirty flag is set,write the page to disk.
+5)If the fix count of the frame array is less than zero ,return an appropriate error code.
 
-1)Check if the requested page is in the buffer.
-2)Check for the fixcount of the page.If zero, check whether page was dirtied.
-3)If the dirty flag is set,write the page to disk and unpin it.
-4)On failure,throw an appropriate message.
 
 
 	Function : forcePage
 	--------------------
-	
-1)Check for page frame existence.
+1)Check if the buffer pool has been initialized.If not,throw an appropriate error code.	
 2)Write the current content of the page back to the page file on disk .
-3)Return the appropriate message to the calling function.
+3)Increase the count of pages_wrote.
+4)On success,return RC_OK to the calling function.
 
 
 	Function : pinPage 
 	------------------
+1)Check if the page is already present in the buffer pool.If yes,	
+	a)Traverse the contents of the page frame from the 1st node till last.
+	b)Increase the fix count of the page ( ##########)
+	c)Check if the replacement strategy is either FIFO or LRU .If not,throw an appropriate error code.
 
-1)Obtain a lock on the code block for making the #function(application) thread safe.
-2)Check if the page is already available in the buffer.If true,there is no need to pin the page again
-3)Check if the buffer pool is free.If true,#pin the page.
-4)If the buffer pool is not free, check for the replacement algorithm passed .
-5)The page is replaced with the new page by calling the user defined function doalgorithm.
-
+2)If the page is not present in the buffer pool,
+	a)Check for minimum possible frame and get the page from file .
+	b)##Assign the values of the page frame. 
+######
+######
+######
+3)On success,return RC_OK to the calling function.
 
 
 **Statistics Functions**
@@ -112,7 +119,7 @@ a)For executing mandatory test cases:
 	Function : getFrameContents
 	----------------------------
 	
-1)Check for the frame existence.
+#1)Check if the buffer pool has been initialized.If not,throw an appropriate error code.
 2)Traverse till the end of page frame and read the page numbers to the array.
 3)Return the array pointer.
  
@@ -120,17 +127,17 @@ a)For executing mandatory test cases:
 	------------------------
 	
 	
-1)Check for the frame existence.
+#1)Check if the buffer pool has been initialized.If not,throw an appropriate error code.
 2)Traverse till the end of page frame and check if the page is dirty.
 3)If true,set that the page is dirty.
-3)Read the values to the array.
-4)Return the array pointer.
+4)Read the values to the array.
+5)Return the array pointer.
 
 
 	Function : getFixCounts
 	------------------------
 	
-1)Check for the frame existence.
+#1)Check if the buffer pool has been initialized.If not,throw an appropriate error code.
 2)Traverse till the end of page frame and check the fix count of the pages in the page frame.
 3)Read the values to the array.
 4)Return the array pointer.
@@ -139,44 +146,35 @@ a)For executing mandatory test cases:
 	Function : getNumReadIO
 	------------------------
 
-1) Search for the buffer node that was requested for.
-2) On Success,return the total number of reads that have taken place. 
+#1)Check the mgmtData of the buffer manager,which contains the information of the pages read.
+#2)Return the pages read. 
 
 
 	Function: getNumWriteIO
 	-----------------------
 	
-1) Search for the buffer node that was requested for.
-2) On Success,return the total number of writes that have taken place. 
+#1)Check the mgmtData of the buffer manager,which contains the information of the pages written.
+#2) Return the pages written. 
 
 ** User defined functions**
 ---------------------------
-We have included the following User defined functions and their functionalities are as described:
 
-	Function: doalgorithm
-	----------------------
-This function returns if the replacement is a success or not
-	
-1)Check for fixed count of all frames who has fixed count more than zero.
-2)For the pages with a fix count of zero,write them to the array.
-3)Check the pages that have to be replaced from the buffer node and use the replacement strategy
-	a)If the replacement strategy is FIFO,look at the counter and replace with immediate counter.
-	b)If the replacement strategy is LRU,look at the time it was inserted.
-3)Check the page for dirty flag.If set,then the page has to be written to the disk.
-4)Update the replacement parameters.
-5)Check for read and write tags and return true if success.
+	Function : init_other_vals
+	--------------------------
+This function is used to initialize the values of the ##buffer pool manager.
 
+##The memory for the dirty_flag_array and fix_Count_array are initialized with the help of this user defined function.
+ 
 
-	Function : what_pools_active
-	----------------------------
-This function is used to check the pools that are active.
-	
-
-	Function : initpf
+	Function : free_all
 	-----------------
-This function is used to initialize the page frame.
-1)Traverse till the size of the page.
-2)Fill the contents of the page with null bytes.
+1)This User Defined function is called by shutdownBufferPool function.
+
+2)Traverse the contents of the page frame from the 1st node till last.
+
+2)Free the memory allocated to the parameters of the buffer pool manager
+
+
 
 4) Additional Test Cases and Additional Error Checks
 ----------------------------------------------------
@@ -199,7 +197,7 @@ RC_REQUSTED_PAGE_PAGE_NOT_FOUND 206 ->Return if the requested page is not found.
 RC_INVALID_STRATEGY 207 ->Return if an invalid replacement strategy is used. 
 
 
-4) Implementation
+5) Implementation
 -----------------
 
 Before the actual coding of the project was done,we figured out the cause and effect of the problem,which made the implementation more systematic.

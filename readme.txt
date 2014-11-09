@@ -37,7 +37,7 @@ For executing mandatory and additional test cases:
 **************************
 1)We have implemented Least Recently Used as an additional replacement strategy.
 
-2)We have made the buffer pool functions thread safe, and tested simple FIFO in thread safe environment.
+2)We have made the buffer pool functions thread safe and tested simple FIFO in thread safe environment.
 
 3)We have included additional test cases and additional error checks.
 
@@ -79,7 +79,7 @@ For executing mandatory and additional test cases:
 1)Check if the buffer pool has been initialized.If not,throw an appropriate error code.	
 2)Traverse the contents of the page frame from the 1st node till last.
 3)If the page is dirty,set the flag to true.
-4)On success,return RC_OK to the calling function..
+4)On success,return RC_OK to the calling function.
 
 
 	Function : unpinPage
@@ -104,12 +104,14 @@ For executing mandatory and additional test cases:
 	Function : pinPage 
 	------------------
 1)Check if the page is already present in the buffer pool.If yes,	
-	a)Traverse the contents of the page frame from the 1st node till last.
+	
+	a)Traverse the contents of the page frame from the 1st node 	till last.
 	b)Increase the fix count of the page
-	c)Check if the replacement strategy is either FIFO or LRU .If not,throw an appropriate error code.
+	c)Check if the replacement strategy is either FIFO or 	LRU .If not,throw an appropriate error code.
 
 2)If the page is not present in the buffer pool,
-	a)Check for minimum possible frame and get the page from file .
+	
+	a)Check for minimum possible frame and get the page from 	file .
 	b)Assign the values of the page frame. 
 
 3)On success,return RC_OK to the calling function.
@@ -148,15 +150,15 @@ For executing mandatory and additional test cases:
 	Function : getNumReadIO
 	------------------------
 
-1)Refer to the pool manager strcture to which contains the information of the pages read.
+1)Refer to the pool manager structure,which contains the information of the pages read.
 2)Return the pages read. 
 
 
 	Function: getNumWriteIO
 	-----------------------
 	
-1)Refer to the pool manager strcture to which contains the information of the pages wrote.
-#2) Return the pages written. 
+1)Refer to the pool manager structure,which contains the information of the pages wrote.
+2) Return the pages written. 
 
 ** User defined functions**
 ---------------------------
@@ -238,9 +240,9 @@ version 1.4  10/30/2014  Syntax errors were rectified.
  
 version 1.5  11/03/2014  Rectified logical errors in LRU impelemntation				   
 
-version 1.6  11/07/2014  Added makefile and readme for code run and understanding
+version 1.6  11/07/2014  Added readme for code run and understanding
 
-version 1.7  11/09/2014  Changed makefile to obey clean rule and updated readme with errro codes   //FINAL
+version 1.7  11/09/2014  Changed makefile to obey clean rule and updated readme with errror codes   //FINAL
 
 
 ----------------------------------------------------------------------------------------------------------------------------------

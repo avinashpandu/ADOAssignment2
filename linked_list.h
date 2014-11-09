@@ -1,54 +1,51 @@
-//header files
-#include "stdio.h"
-#include "stdlib.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include "buffer_mgr.h"
-// for type bool
-#include "dt.h"
+#include "storage_mgr.h"
 
-// Create a node for page frame (Node of a buffer pool)
+// A node 's structure 
 typedef struct page_Frame
 {
-//pointer to next frame
-struct page_Frame *next_Page_Frame;
-// Pointer to pool
-void *pool_Pointer;
-// count no of pages read and wrote to set read vs write counts
-int pages_read,pages_wrote;
-// node content
-void *frame_content;
+	// to find whether is dirty
+    bool dirty_Flag;
+	// Fix count i.e no of clients calling a node
+    int fix_Count;
+	// Page handle and content
+    BM_PageHandle page;
+	// for any algorithm to work on initially a replacement flag needs to be initialized
+	int replace_Flag;
+	// Pointer to next node
+    struct page_Frame* next_Node;
 }page_Frame;
 
-typedef struct frame_content
+// strcture of a buffer pool manager
+typedef struct BP_Manager
 {
-// page no of the file being read
-PageNumber pageno;
-// To check whether a page is dirty or not
-bool dirty_flag;
-// Fix count
-int fix_count;
-// pointer to content of node
-char *frame;
-// for FIFO and LRU
-unsigned long timestamp;
-int counter;
-}frame_content;
+	// head node of a list
+	page_Frame* head_Node;
+	// File Handle
+	SM_FileHandle fHandle;
+	// Content of a frame
+	PageNumber *frameContent;
+	// Holds all the dirty flags of each node
+    bool *dirty_flag_array;
+	// holds 
+	int *fix_Count_array;
+	// for statistical functions
+	int pages_read;
+	int pages_wrote;
+	// for the function get_max_replaceable_Flag 
+	int max_ind_Flag;
+}BP_Manager;
 
-// need a pointer to node for go to previous and next nodes
-struct page_Frame *pointer_to_node;
+// to create a node
+void create_dummy_page_Frame(page_Frame* frame);
 
-// Define Linked list operations
+// To insert a node
+void insert_page_Frame(page_Frame* pf,BM_BufferPool *const bm);
 
-//print buffer pool
-void print_Buffer_Pool(pointer_to_node head);
+// get the page that can be replaced
+int get_max_replaceable_Flag(BM_BufferPool *const bm);
 
-//Insert a page frame into buffer pool
-bool insert_Page_Frame(void *pool_Pointer,void *frame_content,pointer_to_node *new_node);
-
-// Delete a page from buffer pool
-bool delete_Page_Frame(void *pool_Pointer,pointer_to_node *node);
-
-// Search for a page frame in the buffer pool
-page_Frame *search_Page_Frame(void *pool_Pointer,pointer_to_node node);
-
-// File associated and no of pages of file in buffer pool
-int pages_of_file_Associated (char *fileName,pointer_to_node node);
+// get the page that can replaceable after applying an algorithm
+page_Frame* get_min_replaceable_page_Frame(BM_BufferPool *const bm);

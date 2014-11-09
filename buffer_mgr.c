@@ -3,12 +3,18 @@
 #include <unistd.h>
 // for maxinmum and minimum calculations on replacement
 #include <limits.h>
+//For multi threading
+#include <pthread.h>
 // For list functions and variables of nodes and pool
 #include "linked_list.h"
 #include "buffer_mgr.h"
 #include "storage_mgr.h"
 #include "dt.h"
 
+static pthread_mutex_t mutex_initbp=PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutex_forceflush=PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutex_shutdown=PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutex_pin=PTHREAD_MUTEX_INITIALIZER;
 
 // Defined local User-defined functions
 void init_other_vals(BP_Manager* bp_manager,const int numPages);
@@ -23,7 +29,7 @@ RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName,
 	RC rc = RC_OK;
 	int i;
 	page_Frame* frame;
-	
+	pthread_mutex_lock(&mutex_initbp);
 	// assigned passed values to buffer manager pointer
 	bm->numPages = numPages;
 	bm->strategy = strategy;
@@ -59,7 +65,7 @@ RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName,
 
 	// init Other Values in bp_manager 
 	init_other_vals(bp_manager,numPages);
-
+	pthread_mutex_unlock(&mutex_initbp);
 	return rc;
 }
 
@@ -68,7 +74,7 @@ RC shutdownBufferPool(BM_BufferPool *const bm)
 	//local variables
 	RC rc = RC_OK;
 	int i = 0;
-	
+	pthread_mutex_lock(&mutex_shutdown);
     BP_Manager* bp_manager=(BP_Manager*)bm->mgmtData;
 	page_Frame* frame=(page_Frame*)bp_manager->head_Node;
     
@@ -98,6 +104,7 @@ RC shutdownBufferPool(BM_BufferPool *const bm)
 	
     free(bp_manager);
     bp_manager=NULL;
+	pthread_mutex_unlock(&mutex_shutdown);
     return rc;
 }
 
@@ -108,7 +115,8 @@ RC forceFlushPool(BM_BufferPool *const bm)
 	RC rc = RC_OK;
 	int i;
 	
-        BP_Manager* bp_manager = (BP_Manager*)bm->mgmtData;
+	pthread_mutex_lock(&mutex_forceflush);
+    BP_Manager* bp_manager = (BP_Manager*)bm->mgmtData;
 	page_Frame* frame = bp_manager->head_Node;
 	
 	if(bm == NULL)
@@ -127,6 +135,7 @@ RC forceFlushPool(BM_BufferPool *const bm)
 		i++;
 	rc = RC_OK;
 	}
+	pthread_mutex_unlock(&mutex_forceflush);
 	return rc;
 
 }
@@ -331,7 +340,7 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 	//local variables
 	RC rc = RC_OK;
 	int i = 0;
-	
+	pthread_mutex_lock(&mutex_pin);
 	BP_Manager * bp_manager = (BP_Manager *)bm->mgmtData;
 	page_Frame * frame = bp_manager->head_Node;
 	
@@ -385,6 +394,7 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 	bp_manager->max_ind_Flag = frame->replace_Flag;
 	
 	rc = RC_OK;
+	pthread_mutex_unlock(&mutex_pin);
 	return rc;
 }
 

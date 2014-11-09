@@ -1,6 +1,10 @@
-end: assign1 clean
+end: assign2 assign1 clean
+assign2:test_assign2_2.o dberror.o storage_mgr.o buffer_mgr.o linked_list.o buffer_mgr_stat.o
+	gcc test_assign2_2.o dberror.o storage_mgr.o buffer_mgr.o linked_list.o buffer_mgr_stat.o -o assign2 -pthread
 assign1:test_assign2_1.o dberror.o storage_mgr.o buffer_mgr.o linked_list.o buffer_mgr_stat.o
 	gcc test_assign2_1.o dberror.o storage_mgr.o buffer_mgr.o linked_list.o buffer_mgr_stat.o -o assign1
+test_assign2_2.o :test_assign2_2.c test_helper.h dberror.h storage_mgr.h buffer_mgr.h linked_list.h buffer_mgr_stat.h
+		gcc -c test_assign2_2.c 
 test_assign2_1.o :test_assign2_1.c test_helper.h dberror.h storage_mgr.h buffer_mgr.h linked_list.h buffer_mgr_stat.h
 		gcc -c test_assign2_1.c 
 dberror.o:dberror.c dberror.h

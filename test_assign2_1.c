@@ -46,7 +46,6 @@ main (void)
   testName = "";
 
   testCreatingAndReadingDummyPages();
-  printf("\nDone with dummy things....\n");
   testReadPage();
   testFIFO();
   testLRU();
@@ -85,6 +84,7 @@ createDummyPages(BM_BufferPool *bm, int num)
   for (i = 0; i < num; i++)
     {
       CHECK(pinPage(bm, h, i));
+      printPoolContent (bm);
       sprintf(h->data, "%s-%i", "Page", h->pageNum);
       CHECK(markDirty(bm, h));
       CHECK(unpinPage(bm,h));
@@ -129,15 +129,15 @@ testReadPage ()
 
   CHECK(createPageFile("testbuffer.bin"));
   CHECK(initBufferPool(bm, "testbuffer.bin", 3, RS_FIFO, NULL));
-  printf("\ntestread.......init done\n");  
+  
   CHECK(pinPage(bm, h, 0));
   CHECK(pinPage(bm, h, 0));
-  printf("\ntest read.....pinPage done\n");
+
   CHECK(markDirty(bm, h));
-  printf("\ntest read.....Marked Dirty\n");
+
   CHECK(unpinPage(bm,h));
   CHECK(unpinPage(bm,h));
-  printf("\ntest read.....Unpined page\n");
+
   CHECK(forcePage(bm, h));
 
   CHECK(shutdownBufferPool(bm));

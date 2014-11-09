@@ -17,15 +17,18 @@ CONTENTS
 1)Instructions to run the code
 *******************************
 
-a)For executing mandatory test cases:
+For executing mandatory and additional test cases:
 
 1) In the terminal,navigate to the assignment directory.
 
 2) Type: 
-	make -f makefile1
+	make -f makefile
 
+****For mandatory test cases ***
 3) ./assign1
 
+****For additional test cases ***
+4) ./assign2
 
 
 *****************************************************************
@@ -34,9 +37,11 @@ a)For executing mandatory test cases:
 **************************
 1)We have implemented Least Recently Used as an additional replacement strategy.
 
-2)We have made the buffer pool functions thread safe.
+2)We have made the buffer pool functions thread safe, and tested simple FIFO in thread safe environment.
 
 3)We have included additional test cases and additional error checks.
+
+*****************************************************************
 
 3)Description of functions used
 ********************************
@@ -46,7 +51,7 @@ a)For executing mandatory test cases:
 
 
 1)Open page file and initialize fHandle.If opening fails,throw an appropriate error code.
-#2)Initialize the linked list to be of size numPages and insert the Page Frame.
+2)Initialize the linked list to be of size numPages and insert the no of Page Frames passed.
 3)Initialize other Values in bp_manager  by calling the user defined function init_other_vals.
 4)The mgmtData is used for book keeping,which contains the information of pages read and pages wrote.
 
@@ -65,9 +70,9 @@ a)For executing mandatory test cases:
 
 
 1)Check if the buffer pool has been initialized.If not,throw an appropriate error code.
-#2)Traverse till the end of the page frame.
+2)Traverse till the end of the buffer pool.
 3)If the dirty_Flag is set true and the fix_Count is equal to zero,then call the  writeBlock function to write the contents to the disk.
-#4)On success,return RC_OK to the calling function. 
+4)On success,return RC_OK to the calling function. 
 
 	Function : markDirty
 	---------------------
@@ -77,14 +82,13 @@ a)For executing mandatory test cases:
 4)On success,return RC_OK to the calling function..
 
 
-
 	Function : unpinPage
 	---------------------
 	
 1)Check if the buffer pool has been initialized.If not,throw an appropriate error code.	
 2)Traverse the contents of the page frame from the 1st node till last.
-###3)Reduce the fix count if the page is already in the buffer.(is this statement true ????)###
-###4)If the dirty flag is set,write the page to disk.
+3)Reduce the fix count if the page is already in the buffer.
+4)If the dirty flag is set and fixed count is zero (not more than one client accessing),write the page to disk.
 5)If the fix count of the frame array is less than zero ,return an appropriate error code.
 
 
@@ -101,15 +105,13 @@ a)For executing mandatory test cases:
 	------------------
 1)Check if the page is already present in the buffer pool.If yes,	
 	a)Traverse the contents of the page frame from the 1st node till last.
-	b)Increase the fix count of the page ( ##########)
+	b)Increase the fix count of the page
 	c)Check if the replacement strategy is either FIFO or LRU .If not,throw an appropriate error code.
 
 2)If the page is not present in the buffer pool,
 	a)Check for minimum possible frame and get the page from file .
-	b)##Assign the values of the page frame. 
-######
-######
-######
+	b)Assign the values of the page frame. 
+
 3)On success,return RC_OK to the calling function.
 
 
@@ -119,7 +121,7 @@ a)For executing mandatory test cases:
 	Function : getFrameContents
 	----------------------------
 	
-#1)Check if the buffer pool has been initialized.If not,throw an appropriate error code.
+1)Check if the buffer pool is null.If not,throw an appropriate error code.
 2)Traverse till the end of page frame and read the page numbers to the array.
 3)Return the array pointer.
  
@@ -127,7 +129,7 @@ a)For executing mandatory test cases:
 	------------------------
 	
 	
-#1)Check if the buffer pool has been initialized.If not,throw an appropriate error code.
+1)Check if the buffer pool is null.If not,throw an appropriate error code.
 2)Traverse till the end of page frame and check if the page is dirty.
 3)If true,set that the page is dirty.
 4)Read the values to the array.
@@ -137,7 +139,7 @@ a)For executing mandatory test cases:
 	Function : getFixCounts
 	------------------------
 	
-#1)Check if the buffer pool has been initialized.If not,throw an appropriate error code.
+1)Check if the buffer pool is null.If not,throw an appropriate error code.
 2)Traverse till the end of page frame and check the fix count of the pages in the page frame.
 3)Read the values to the array.
 4)Return the array pointer.
@@ -146,14 +148,14 @@ a)For executing mandatory test cases:
 	Function : getNumReadIO
 	------------------------
 
-#1)Check the mgmtData of the buffer manager,which contains the information of the pages read.
-#2)Return the pages read. 
+1)Refer to the pool manager strcture to which contains the information of the pages read.
+2)Return the pages read. 
 
 
 	Function: getNumWriteIO
 	-----------------------
 	
-#1)Check the mgmtData of the buffer manager,which contains the information of the pages written.
+1)Refer to the pool manager strcture to which contains the information of the pages wrote.
 #2) Return the pages written. 
 
 ** User defined functions**
@@ -161,9 +163,8 @@ a)For executing mandatory test cases:
 
 	Function : init_other_vals
 	--------------------------
-This function is used to initialize the values of the ##buffer pool manager.
-
-##The memory for the dirty_flag_array and fix_Count_array are initialized with the help of this user defined function.
+1) This function is used to initialize the not so dynamically changing values of the buffer pool manager.
+2) The memory for the dirty_flag_array and fix_Count_array are initialized with the help of this user defined function.
  
 
 	Function : free_all
@@ -174,28 +175,35 @@ This function is used to initialize the values of the ##buffer pool manager.
 
 2)Free the memory allocated to the parameters of the buffer pool manager
 
-
+****************************************************************
 
 4) Additional Test Cases and Additional Error Checks
 ----------------------------------------------------
 
+	Test cases
+	-----------------
+
 We have included additional test cases for executing the following functions.
 
-->
-->
-->
-->
-->
-->
-->
-->
+->  We tested Least recently used (LRU) algorithm in pre-defined test case.
+->  We included test_assign2_2.c which tests a thread-safe simple FIFO page replacement fucntion which replaces a page in buffer pool.  
 
+	Error Checks
+	-----------------
+	
 We have included the following additional error checks
 
-RC_REQUSTED_PAGE_PAGE_NOT_FOUND 206 ->Return if the requested page is not found.
+->  RC_POOL_INIT_ERROR 206   			// Pool initialization error
+->  RC_NULL_FRAME_RETURN 207
+ 			// NULL Frame returned from a pool node
+->  RC_FILE_OPEN_ERROR 208  			// File cant be opened
+->  RC_REQUESTED_PAGE_NOT_FOUND 209		// Page requsted wasnt found in the pool
+->  RC_INVALID_STRATEGY 210 			// Strategy passed is invalid ** Valid are RS_FIFO and RS_LRU
+->  RC_PAGE_IS_BEING_USED 211			// PAGE is in use by other client and cant write it
+->  RC_CANNOT_FORCE_APAGE 212			// A page cant be forced 
+->  RC_CANNOT_INIT_POOL 213			// A page cant be unpinned 
 
-RC_INVALID_STRATEGY 207 ->Return if an invalid replacement strategy is used. 
-
+*****************************************************************
 
 5) Implementation
 -----------------
@@ -228,10 +236,12 @@ version 1.3  10/29/2014  Make file was created and code had 					   logical and 
 
 version 1.4  10/30/2014  Syntax errors were rectified.
  
+version 1.5  11/03/2014  Rectified logical errors in LRU impelemntation				   
 
+version 1.6  11/07/2014  Added makefile and readme for code run and understanding
+
+version 1.7  11/09/2014  Changed makefile to obey clean rule and updated readme with errro codes   //FINAL
 
 
 ----------------------------------------------------------------------------------------------------------------------------------
  
-
-
